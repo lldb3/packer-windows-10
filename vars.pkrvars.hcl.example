@@ -1,0 +1,11 @@
+proxmox_host = "node"
+proxmox_api_url = "https://node/api2/json"
+proxmox_api_token_id = "root@pam!iac_automation"
+proxmox_api_token_secret = "deadbeef"
+windows_iso_file = "nfs-nas:iso/Win10_22H2_EnglishInternational_x64v1.iso"
+virtio_iso_file = "local:iso/virtio-win-0.1.240.iso"
+vm_cpu_cores = "4"
+vm_vlan = null
+github_user = "toto"
+user_name = "vagrant"
+user_password = "vagrant"

@@ -1,0 +1,48 @@
+- name: Copy local files to remote
+  win_copy:
+    src: ../bin/
+    dest: "{{ remote_folder }}"
+
+- name: List files in the remote dir
+  win_find:
+    paths: "{{ remote_folder }}"
+  register: all_files
+
+- name: List all files transferred
+  debug:
+    msg: transferred - {{ item.path }}
+  loop: "{{ all_files.files }}"
+
+- name: Find executable files in {{ remote_folder }}
+  win_find:
+    paths: "{{ remote_folder }}"
+    patterns: "*.exe,*.msi"
+  register: executable_files
+
+- name: List all files transferred
+  debug:
+    msg: exes - {{ item.path }}
+  loop: "{{ executable_files.files }}"
+
+- name: debug user
+  debug:
+    msg: User is --> {{ ansible_user }} <--
+
+- name: Execute OOSU
+  win_command: '{{ remote_folder }}\OOSU10.exe /quiet {{ remote_folder }}\OOSU10.cfg'
+
+
+- name: clone win-debloat tools to remote
+  win_shell: 'git.exe clone https://github.com/LeDragoX/Win-Debloat-Tools.git {{ remote_folder }}\Win-Debloat-Tools'
+
+
+# can be very slow
+# https://github.com/bmrf/tron/releases/tag/v12.0.6
+#- name: Tron execute with debloat only
+#  win_shell: '{{ remote_folder }}\tron\tron.bat -a -r -sa -sdc'
+
+#- name: Execute .exe files on remote host without arguments
+#  win_command: "{{ remote_folder }}\{{ item.basename }} {{ executable_args[item.basename] | default('') }}"
+#  loop: "{{ executable_files.files | selectattr('path', 'match', '\\.exe$') | list }}"
+
+

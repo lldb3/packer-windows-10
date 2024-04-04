@@ -1,0 +1,4 @@
+- name: Add public company share
+  win_shell: |
+    New-SmbMapping -RemotePath '\\192.168.10.3' -Username "WORKGROUP\ep_share" -Password "o9º:é9FÀÊV-Þgá^Ô?ÔT¢ÍpT"
+    New-Item -ItemType SymbolicLink -Path "C:\Users\{{ ansible_user }}\Desktop\Share" -Target "\\192.168.10.3\Share\"

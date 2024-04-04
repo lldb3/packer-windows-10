@@ -1,0 +1,6 @@
+# roles/packages/defaults/main.yml
+chocolatey_source: "https://chocolatey.org/api/v2/package/"
+chocolatey_proxy: ""
+chocolatey_proxy_user: ""
+chocolatey_proxy_pass: ""
+chocolatey_accept_license: true

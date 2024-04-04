@@ -1,0 +1,21 @@
+# site.yml
+---
+- hosts: all
+  vars:
+    ansible_user: autod
+    ansible_password: 5FhPg7Ui2MTARmNgZan4U4Acqf5A5sjcVQzAoiZ5q
+    ansible_connection: winrm
+    ansible_winrm_scheme: https
+    ansible_winrm_server_cert_validation: ignore
+
+  roles:
+    - role: ssh
+      tags: ssh
+    - role: packages
+      tags: packages
+    - role: vm_guest
+      tags: vm_guest
+    - role: privacy
+      tags: privacy
+#    - role: smb_cad_lab
+#      tags: smb_cad_lab

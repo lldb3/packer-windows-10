@@ -1,0 +1,16 @@
+# roles/packages/vars/main.yml
+chocolatey_packages:
+  - vcredist-all
+  - git
+  - 7zip
+  - winrar
+  - sysinternals
+  - bleachbit
+  - windirstat
+  - firefox
+  - vscode
+  - microsoft-windows-terminal
+  - openssh
+  - gpu-z
+  - cpu-z
+  - processhacker

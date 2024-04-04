@@ -1,0 +1,5 @@
+local_folder: ../bin
+remote_folder: 'C:\Users\{{ ansible_user }}\Desktop\tools'
+#executable_args:
+#  program1.exe: '/arg1 /arg2'
+#  program2.exe: '/arg3 /arg4'

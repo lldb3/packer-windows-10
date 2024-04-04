@@ -1,0 +1,121 @@
+# roles/ssh/tasks/main.yml
+
+- name: Ensure SSH Server feature is present
+  win_chocolatey:
+    name: "openssh"
+    package_params: "--package-parameters=/SSHServerFeature"
+    state: present
+
+
+- name: Set PowerShell as default sshd shell
+  ansible.windows.win_powershell:
+    script: |
+      New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -PropertyType String -Force
+
+- name: Add firewall rule for SSH
+  win_firewall_rule:
+    name: OpenSSH-Server-In-TCP
+    state: present
+    localport: 22
+    protocol: tcp
+    direction: in
+    action: allow
+
+
+
+
+- name: Announce ssh key path
+  debug:
+    msg: "Using local ssh pubkey {{ ssh_key_path }} since github_user is not defined"
+  when: github_user is not defined
+
+- name: Get Local SSH File content
+  set_fact:
+    ssh_key: "{{ lookup('ansible.builtin.file', ssh_key_path) }}"
+  when: github_user is not defined
+
+- name: Announce ssh key GH user
+  debug:
+    msg: "Using SSH key from GH with user {{ github_user }}"
+  when: github_user is defined
+
+- name: Fetch SSH keys from GitHub API
+  win_uri:
+    url: "https://api.github.com/users/{{ github_user }}/keys"
+    return_content: yes
+    validate_certs: yes
+    status_code: 200
+  register: github_response
+  when: github_user is defined
+
+- name: Extract SSH key from GH response
+  set_fact:
+    ssh_key: "{{ github_response.content | from_json | json_query('[0].key') }}"
+  when: github_user is defined
+
+- ansible.builtin.debug:
+    msg: "the value of the ssh_key to be authorized is {{ ssh_key }}"
+
+
+- name: Add key to admin authorized_keys
+  win_shell: |
+    powershell Add-Content -Force -Path $env:ProgramData\ssh\administrators_authorized_keys -Value '''{{ ssh_key }}''';icacls.exe ""$env:ProgramData\ssh\administrators_authorized_keys"" /inheritance:r /grant ""Administrators:F"" /grant ""SYSTEM:F""
+
+
+######################## Determining correct remote path for SSH key
+#
+#- name: Get list of groups for current user
+#  win_shell: whoami /groups
+#  register: user_groups
+#
+#- name: Set user_is_admin variable
+#  set_fact:
+#    user_is_admin: "'BUILTIN\\Administrators' in user_groups.stdout"
+#
+#- name: Set ssh_remote_folder variable
+#  set_fact:
+#    ssh_remote_folder: "C:\\ProgramData\\ssh"
+#  when: user_is_admin
+#
+#- name: Set ssh_remote_folder variable for non-admin users
+#  set_fact:
+#    ssh_remote_folder: "C:\\Users\\{{ ansible_user }}\\.ssh"
+#  when: not user_is_admin
+#
+#- name: Set correct permissions for .ssh directory
+#  win_file:
+#    path: "{{ ssh_remote_folder }}"
+#    state: directory
+#    mode: '0700'
+#
+######################### writing the keys
+#- name: Write GH key to file
+#  win_copy:
+#    content: "{{ ssh_key }}"
+#    dest: "{{ ssh_remote_folder }}\\administrators_authorized_keys"
+#    force: yes
+#  when: github_user is defined
+#
+#- name: Write SSH key to file
+#  win_copy:
+#    src: "{{ ssh_key_path }}"
+#    dest: "{{ ssh_remote_folder }}\\administrators_authorized_keys"
+#    force: yes
+#  when: github_user is not defined
+
+#- name: Copy SSH key to authorized_keys
+#  win_copy:
+#    src: "{{ ssh_key_file }}"
+#    dest: "{{ ssh_remote_folder }}"
+
+#- name: Set correct permissions for authorized_keys file
+#  win_file:
+#    path: "{{ ssh_remote_folder }}\\administrators_authorized_keys"
+#    state: file
+#    mode: '0600'
+
+- name: Enable auto and restart SSH service
+  win_service:
+    name: sshd
+    state: restarted
+    start_mode: auto
