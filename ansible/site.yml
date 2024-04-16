@@ -9,13 +9,11 @@
     ansible_winrm_server_cert_validation: ignore
 
   roles:
-    - role: ssh
-      tags: ssh
     - role: packages
       tags: packages
+    - role: ssh
+      tags: ssh
     - role: vm_guest
       tags: vm_guest
     - role: privacy
       tags: privacy
-#    - role: smb_cad_lab
-#      tags: smb_cad_lab
