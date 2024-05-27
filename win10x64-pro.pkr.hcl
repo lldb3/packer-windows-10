@@ -28,7 +28,6 @@ source "proxmox-iso" "windows-10-pro-packer" {
   iso_file                 = "${var.windows_iso_file}"
   unmount_iso              = true
   memory                   = "${var.vm_memory}"
-  #  http_directory           = "./"
   communicator             = "winrm"
   ssh_username             = "${var.user_name}"
   ssh_password             = "${var.user_password}"
@@ -37,6 +36,8 @@ source "proxmox-iso" "windows-10-pro-packer" {
   winrm_password           = "${var.user_password}"
   winrm_use_ssl            = true
   winrm_username           = "${var.user_name}"
+  #  http_directory           = "./"
+
 
   additional_iso_files {
     cd_files = [
@@ -78,17 +79,19 @@ build {
     scripts = ["scripts/winupdates-disable.bat"]
   }
 
-  provisioner "powershell" {
-    scripts = [
-      "scripts/custom.ps1", "scripts/hibernate-disable.ps1"
-    ]
-  }
+  #   provisioner "powershell" {
+  #     scripts = [
+  #       "scripts/custom.ps1", "scripts/hibernate-disable.ps1"
+  #     ]
+  #   }
 
   provisioner "ansible" {
-    command         = "./ansible_play.sh"
-    playbook_file   = "ansible/site.yml"
-    user            = "autod"
-    use_proxy       = false
+    playbook_file    = "ansible/site.yml"
+    user             = "autod"
+    use_proxy        = false
+    ansible_env_vars = [
+      "OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES", "ANSIBLE_FORCE_COLOR=1", "PYTHONUNBUFFERED=1"
+    ]
     extra_arguments = [
       "-e", "ansible_winrm_server_cert_validation=ignore",
       "-e", "github_user=${var.github_user}"
@@ -97,7 +100,7 @@ build {
 
   provisioner "breakpoint" {
     disable = true ## for DEBUGGING purposes, set to false
-    note    = "this is a breakpoint"
+    note = "this is a breakpoint"
   }
 
 
